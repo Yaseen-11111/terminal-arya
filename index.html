@@ -33,7 +33,7 @@
         .nav-tab:hover:not(.active) { color: var(--text-main); background: rgba(0,255,102,0.05); }
         .view-section { display: none; flex-grow: 1; flex-direction: column; }
         .view-section.active { display: flex; }
-        .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; flex-grow: 1; align-items: start; }
+        .main-layout { display: grid; grid-template-columns: 1fr; gap: 15px; padding: 15px; flex-grow: 1; align-items: start; }
         .center-stage { display: flex; flex-direction: column; gap: 15px; }
         .dashboard-top-bar { display: flex; justify-content: space-between; align-items: flex-start; background: var(--bg-card); padding: 12px 16px; border: 1px solid var(--border-color); box-shadow: 0 0 10px rgba(0,255,102,0.1); }
         .asset-title-block h2 { font-size: 1.2rem; font-weight: 700; word-break: break-all; }
@@ -60,13 +60,14 @@
         .tf-btn { background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); padding: 3px 8px; cursor: pointer; font-size: 0.7rem; font-weight: 600; font-family: 'Courier New', Courier, monospace; }
         .tf-btn.active, .tf-btn:hover { background: var(--border-color); color: var(--bg-dark); }
         .canvas-wrapper { position: relative; width: 100%; height: 240px; flex-grow: 1; }
-        .right-panel { background-color: var(--bg-card); border: 1px solid var(--border-color); display: flex; flex-direction: column; height: 100%; min-height: 590px; }
-        .panel-section { padding: 15px; display: flex; flex-direction: column; height: 100%; }
-        .panel-section h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
+        
+        .news-container { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; gap: 12px; }
+        .news-panel-section { background-color: var(--bg-card); border: 1px solid var(--border-color); padding: 15px; display: flex; flex-direction: column; height: calc(100vh - 150px); }
+        .news-panel-section h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
         .news-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed var(--border-color); }
         .filter-btn { background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.65rem; padding: 3px 6px; cursor: pointer; font-family: 'Courier New', Courier, monospace; }
         .filter-btn.active, .filter-btn:hover { background: var(--border-color); color: var(--bg-dark); font-weight: bold; }
-        .news-feed { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex-grow: 1; max-height: 480px; }
+        .news-feed { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex-grow: 1; }
         .news-card { background: var(--bg-dark); border: 1px solid var(--border-color); padding: 10px; text-decoration: none; color: inherit; display: block; transition: all 0.2s; }
         .news-card:hover { border-color: var(--text-main); box-shadow: 0 0 8px rgba(0,255,102,0.3); }
         .news-meta-row { display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted); margin-bottom: 4px; gap: 4px; flex-wrap: wrap; }
@@ -91,7 +92,7 @@
         .nasdaq-table-card th, .nasdaq-table-card td { padding: 8px 10px; border-bottom: 1px solid #003311; word-break: normal; white-space: nowrap; }
         .nasdaq-table-card td:nth-child(2) { max-width: 250px; overflow: hidden; text-overflow: ellipsis; }
 
-        @media (max-width: 900px) { .main-layout, .globe-container { grid-template-columns: 1fr; } }
+        @media (max-width: 900px) { .globe-container { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body onload="initTerminal()">
@@ -112,10 +113,11 @@
     <div class="nav-tabs">
         <button class="nav-tab active" onclick="switchView('dashboard')">[01] ACTIVE TERMINAL</button>
         <button class="nav-tab" onclick="switchView('globe')">[02] 3D GEOPOLITICAL GLOBE</button>
-        <button class="nav-tab" onclick="switchView('nasdaq')">[03] FULL NASDAQ MASTER TABLE</button>
+        <button class="nav-tab" onclick="switchView('news')">[03] INTELLIGENCE HUB</button>
+        <button class="nav-tab" onclick="switchView('nasdaq')">[04] FULL NASDAQ MASTER TABLE</button>
     </div>
 
-    <div id="view-dashboard" class="view-section">
+    <div id="view-dashboard" class="view-section active">
         <div class="main-layout">
             <div class="center-stage">
                 <div class="dashboard-top-bar">
@@ -172,26 +174,6 @@
                     </div>
                 </div>
             </div>
-
-            <div class="right-panel">
-                <div class="panel-section">
-                    <h3 id="newsHeaderTitle">[Intelligence Hub]</h3>
-                    <div class="news-filters">
-                        <button class="filter-btn active" onclick="filterNews('ALL', this)">ALL</button>
-                        <button class="filter-btn" onclick="filterNews('USA', this)">🇺🇸 USA</button>
-                        <button class="filter-btn" onclick="filterNews('GBR', this)">🇬🇧 UK</button>
-                        <button class="filter-btn" onclick="filterNews('TWN', this)">🇹🇼 TWN</button>
-                        <button class="filter-btn" onclick="filterNews('NLD', this)">🇳🇱 NLD</button>
-                        <button class="filter-btn" onclick="filterNews('JPN', this)">🇯🇵 JPN</button>
-                        <button class="filter-btn" onclick="filterNews('KOR', this)">🇰🇷 KOR</button>
-                        <button class="filter-btn" onclick="filterNews('DEU', this)">🇩🇪 DEU</button>
-                        <button class="filter-btn" onclick="filterNews('INFRA', this)">INFRA</button>
-                        <button class="filter-btn" onclick="filterNews('WAR', this)">WAR</button>
-                        <button class="filter-btn" onclick="filterNews('GEO', this)">GEO</button>
-                    </div>
-                    <div class="news-feed" id="newsFeedContainer"></div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -213,6 +195,28 @@
             <div class="globe-sidebar">
                 <h3 style="font-size:0.8rem; color:var(--text-muted);">[Global Node Directory]</h3>
                 <div id="globeNodeList" style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; flex-grow:1;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-news" class="view-section">
+        <div class="news-container">
+            <div class="news-panel-section">
+                <h3 id="newsHeaderTitle">[Global Intelligence Hub Stream]</h3>
+                <div class="news-filters">
+                    <button class="filter-btn active" onclick="filterNews('ALL', this)">ALL</button>
+                    <button class="filter-btn" onclick="filterNews('USA', this)">🇺🇸 USA</button>
+                    <button class="filter-btn" onclick="filterNews('GBR', this)">🇬🇧 UK</button>
+                    <button class="filter-btn" onclick="filterNews('TWN', this)">🇹🇼 TWN</button>
+                    <button class="filter-btn" onclick="filterNews('NLD', this)">🇳🇱 NLD</button>
+                    <button class="filter-btn" onclick="filterNews('JPN', this)">🇯🇵 JPN</button>
+                    <button class="filter-btn" onclick="filterNews('KOR', this)">🇰🇷 KOR</button>
+                    <button class="filter-btn" onclick="filterNews('DEU', this)">🇩🇪 DEU</button>
+                    <button class="filter-btn" onclick="filterNews('INFRA', this)">INFRA</button>
+                    <button class="filter-btn" onclick="filterNews('WAR', this)">WAR</button>
+                    <button class="filter-btn" onclick="filterNews('GEO', this)">GEO</button>
+                </div>
+                <div class="news-feed" id="newsFeedContainer"></div>
             </div>
         </div>
     </div>
@@ -257,61 +261,61 @@
 
     <script>
         const masterNewsPool = [
-            {source:"Bloomberg Terminal", category:"INFRA", country:"USA", title:"SoundHound Expands Voice AI Edge Deployment", summary:"New automotive contracts scaling silicon-valley speech recognition clusters.", time:"12m", url:"#"},
-            {source:"Reuters Financial", category:"WAR", country:"USA", title:"Sovereign Defense Contracts Boost Sector Outlook", summary:"Procurement agencies accelerate cryptographic hardware integration amid rising threat levels.", time:"32m", url:"#"},
-            {source:"Wall Street Journal", category:"GEO", country:"USA", title:"US Lawmakers Scrutinize Voice Data Sovereignty", summary:"Congressional committee demands localized processing for domestic AI transcription.", time:"1h", url:"#"},
-            {source:"Wall Street Journal", category:"INFRA", country:"USA", title:"Next-Generation AI Cluster Accelerators Shipped", summary:"Enterprise data center buildouts driving record semiconductor demand.", time:"2h", url:"#"},
-            {source:"Bloomberg", category:"INFRA", country:"USA", title:"MI300X Accelerator Shipments Scale to Hyperscalers", summary:"Alternative GPU infrastructure gains ground in enterprise data centers.", time:"3h", url:"#"},
-            {source:"Reuters", category:"GEO", country:"USA", title:"Foundry Services Division Expands US Customer Pipeline", summary:"Domestic wafer manufacturing agreements secure federal funding milestones.", time:"4h", url:"#"},
-            {source:"CNBC Market Watch", category:"INFRA", country:"USA", title:"Silicon Valley Power Grid Upgrades for Data Centers", summary:"Energy infrastructure expanded to support multi-gigawatt compute clusters.", time:"5h", url:"#"},
+            {source:"Bloomberg Terminal", category:"INFRA", country:"USA", title:"SoundHound Expands Voice AI Edge Deployment", summary:"New automotive contracts scaling silicon-valley speech recognition clusters.", time:"12m", url:"https://www.bloomberg.com"},
+            {source:"Reuters Financial", category:"WAR", country:"USA", title:"Sovereign Defense Contracts Boost Sector Outlook", summary:"Procurement agencies accelerate cryptographic hardware integration amid rising threat levels.", time:"32m", url:"https://www.reuters.com"},
+            {source:"Wall Street Journal", category:"GEO", country:"USA", title:"US Lawmakers Scrutinize Voice Data Sovereignty", summary:"Congressional committee demands localized processing for domestic AI transcription.", time:"1h", url:"https://www.wsj.com"},
+            {source:"Wall Street Journal", category:"INFRA", country:"USA", title:"Next-Generation AI Cluster Accelerators Shipped", summary:"Enterprise data center buildouts driving record semiconductor demand.", time:"2h", url:"https://www.wsj.com"},
+            {source:"Bloomberg", category:"INFRA", country:"USA", title:"MI300X Accelerator Shipments Scale to Hyperscalers", summary:"Alternative GPU infrastructure gains ground in enterprise data centers.", time:"3h", url:"https://www.bloomberg.com"},
+            {source:"Reuters", category:"GEO", country:"USA", title:"Foundry Services Division Expands US Customer Pipeline", summary:"Domestic wafer manufacturing agreements secure federal funding milestones.", time:"4h", url:"https://www.reuters.com"},
+            {source:"CNBC Market Watch", category:"INFRA", country:"USA", title:"Silicon Valley Power Grid Upgrades for Data Centers", summary:"Energy infrastructure expanded to support multi-gigawatt compute clusters.", time:"5h", url:"https://www.cnbc.com"},
 
-            {source:"Financial Times", category:"INFRA", country:"GBR", title:"Cambridge Research Labs Partner with ASML on Optical Metrology", summary:"British physics institutes collaborate on sub-nanometer measurement accuracy.", time:"30m", url:"#"},
-            {source:"TechCrunch UK", category:"INFRA", country:"GBR", title:"v9 Architecture Adoption Accelerates in Datacenter CPUs", summary:"Energy-efficient instruction sets powering custom cloud server chips.", time:"1h", url:"#"},
-            {source:"BBC News", category:"INFRA", country:"GBR", title:"London Analytics Hub Features Global Market Metrics", summary:"British financial institutions track operational performance indicators.", time:"2h", url:"#"},
-            {source:"The Guardian", category:"GEO", country:"GBR", title:"UK Regulator Unveils AI Safety Framework", summary:"New compliance guidelines issued for financial algorithms and automated trading desks.", time:"3h", url:"#"},
-            {source:"Reuters UK", category:"INFRA", country:"GBR", title:"British Telecom Deploys Quantum-Resistant Fiber Links", summary:"Financial district data corridors secured against future cryptographic decryption threats.", time:"4h", url:"#"},
-            {source:"Financial Times", category:"GEO", country:"GBR", title:"London Stock Exchange Attracts Tech Listings", summary:"New regulatory incentives draw international semiconductor firms to secondary floats.", time:"5h", url:"#"},
-            {source:"TechRadar Pro", category:"INFRA", country:"GBR", title:"Edge Computing Hubs Expand Across Northern Powerhouse", summary:"Regional data nodes reduce latency for industrial automation networks.", time:"6h", url:"#"},
+            {source:"Financial Times", category:"INFRA", country:"GBR", title:"Cambridge Research Labs Partner with ASML on Optical Metrology", summary:"British physics institutes collaborate on sub-nanometer measurement accuracy.", time:"30m", url:"https://www.ft.com"},
+            {source:"TechCrunch UK", category:"INFRA", country:"GBR", title:"v9 Architecture Adoption Accelerates in Datacenter CPUs", summary:"Energy-efficient instruction sets powering custom cloud server chips.", time:"1h", url:"https://techcrunch.com"},
+            {source:"BBC News", category:"INFRA", country:"GBR", title:"London Analytics Hub Features Global Market Metrics", summary:"British financial institutions track operational performance indicators.", time:"2h", url:"https://www.bbc.com/news"},
+            {source:"The Guardian", category:"GEO", country:"GBR", title:"UK Regulator Unveils AI Safety Framework", summary:"New compliance guidelines issued for financial algorithms and automated trading desks.", time:"3h", url:"https://www.theguardian.com"},
+            {source:"Reuters UK", category:"INFRA", country:"GBR", title:"British Telecom Deploys Quantum-Resistant Fiber Links", summary:"Financial district data corridors secured against future cryptographic decryption threats.", time:"4h", url:"https://www.reuters.com"},
+            {source:"Financial Times", category:"GEO", country:"GBR", title:"London Stock Exchange Attracts Tech Listings", summary:"New regulatory incentives draw international semiconductor firms to secondary floats.", time:"5h", url:"https://www.ft.com"},
+            {source:"TechRadar Pro", category:"INFRA", country:"GBR", title:"Edge Computing Hubs Expand Across Northern Powerhouse", summary:"Regional data nodes reduce latency for industrial automation networks.", time:"6h", url:"https://www.techradar.com"},
 
-            {source:"Financial Times", category:"INFRA", country:"TWN", title:"3nm and 2nm Production Lines Run at Full Capacity", summary:"Global hyperscalers secure wafer allocations for next-gen models.", time:"18m", url:"#"},
-            {source:"Taipei Times", category:"INFRA", country:"TWN", title:"Advanced Packaging CoWoS Capacity Expansion Accelerated", summary:"Southern Taiwan science park fabs ramp up output to meet surging AI demand.", time:"1h", url:"#"},
-            {source:"Central News Agency", category:"INFRA", country:"TWN", title:"Green Energy Procurement Agreements Signed for Fabs", summary:"Zero-carbon power sourcing expanded across domestic semiconductor foundries.", time:"2h", url:"#"},
-            {source:"Taipei Times", category:"INFRA", country:"TWN", title:"AI Server Rack Assembly Lines Scaled Globally", summary:"Dedicated manufacturing facilities deployed for liquid-cooled enterprise clusters.", time:"3h", url:"#"},
-            {source:"Focus Taiwan", category:"GEO", country:"TWN", title:"Strategic Semiconductor Corridor Receives Defense Upgrade", summary:"Critical foundry infrastructure reinforced with redundant power and security systems.", time:"4h", url:"#"},
-            {source:"Economic Daily News", category:"INFRA", country:"TWN", title:"Sub-Angstrom Lithography R&D Consortium Formed", summary:"Domestic academic and industrial partners pool resources for post-silicon scaling.", time:"5h", url:"#"},
-            {source:"Taipei Times", category:"INFRA", country:"TWN", title:"Silicon Photonics Transceiver Shipments Surge", summary:"Optical interconnect modules deployed to eliminate data center networking bottlenecks.", time:"6h", url:"#"},
+            {source:"Financial Times", category:"INFRA", country:"TWN", title:"3nm and 2nm Production Lines Run at Full Capacity", summary:"Global hyperscalers secure wafer allocations for next-gen models.", time:"18m", url:"https://www.ft.com"},
+            {source:"Taipei Times", category:"INFRA", country:"TWN", title:"Advanced Packaging CoWoS Capacity Expansion Accelerated", summary:"Southern Taiwan science park fabs ramp up output to meet surging AI demand.", time:"1h", url:"https://www.taipeitimes.com"},
+            {source:"Central News Agency", category:"INFRA", country:"TWN", title:"Green Energy Procurement Agreements Signed for Fabs", summary:"Zero-carbon power sourcing expanded across domestic semiconductor foundries.", time:"2h", url:"https://www.cna.com.tw"},
+            {source:"Taipei Times", category:"INFRA", country:"TWN", title:"AI Server Rack Assembly Lines Scaled Globally", summary:"Dedicated manufacturing facilities deployed for liquid-cooled enterprise clusters.", time:"3h", url:"https://www.taipeitimes.com"},
+            {source:"Focus Taiwan", category:"GEO", country:"TWN", title:"Strategic Semiconductor Corridor Receives Defense Upgrade", summary:"Critical foundry infrastructure reinforced with redundant power and security systems.", time:"4h", url:"https://focustaiwan.tw"},
+            {source:"Economic Daily News", category:"INFRA", country:"TWN", title:"Sub-Angstrom Lithography R&D Consortium Formed", summary:"Domestic academic and industrial partners pool resources for post-silicon scaling.", time:"5h", url:"https://udn.com"},
+            {source:"Taipei Times", category:"INFRA", country:"TWN", title:"Silicon Photonics Transceiver Shipments Surge", summary:"Optical interconnect modules deployed to eliminate data center networking bottlenecks.", time:"6h", url:"https://www.taipeitimes.com"},
 
-            {source:"Financial Times", category:"INFRA", country:"NLD", title:"EUV Cleanroom Expansion at Veldhoven Headquarters", summary:"High-NA lithography systems assembly scaled to meet global foundry demand.", time:"45m", url:"#"},
-            {source:"De Telegraaf", category:"GEO", country:"NLD", title:"Dutch Government Protects Strategic Tech Supply Chains", summary:"Export control harmonization agreed with international semiconductor allies.", time:"1h", url:"#"},
-            {source:"Eindhoven News", category:"INFRA", country:"NLD", title:"Brainport Tech Region Attracts Engineering Talent", summary:"European research grants fuel collaborative projects in photonics and nano-electronics.", time:"2h", url:"#"},
-            {source:"Reuters", category:"INFRA", country:"NLD", title:"Optics Supply Chain Resilience Initiative Launched", summary:"European component makers secure raw material pipelines for advanced optical lenses.", time:"3h", url:"#"},
-            {source:"Bloomberg", category:"INFRA", country:"NLD", title:"High-NA EUV Maintenance Networks Expand Globally", summary:"Dedicated technical teams dispatched to international wafer fabrication facilities.", time:"4h", url:"#"},
-            {source:"DutchNews", category:"GEO", country:"NLD", title:"Amsterdam Internet Exchange Handles Record AI Traffic", summary:"European data routing nodes experience unprecedented packet volume growth.", time:"5h", url:"#"},
-            {source:"Techzine Netherlands", category:"INFRA", country:"NLD", title:"Software Automation Deployed in Lithography Calibration", summary:"Machine learning algorithms optimize beam alignment for precision wafer patterning.", time:"6h", url:"#"},
+            {source:"Financial Times", category:"INFRA", country:"NLD", title:"EUV Cleanroom Expansion at Veldhoven Headquarters", summary:"High-NA lithography systems assembly scaled to meet global foundry demand.", time:"45m", url:"https://www.ft.com"},
+            {source:"De Telegraaf", category:"GEO", country:"NLD", title:"Dutch Government Protects Strategic Tech Supply Chains", summary:"Export control harmonization agreed with international semiconductor allies.", time:"1h", url:"https://www.telegraaf.nl"},
+            {source:"Eindhoven News", category:"INFRA", country:"NLD", title:"Brainport Tech Region Attracts Engineering Talent", summary:"European research grants fuel collaborative projects in photonics and nano-electronics.", time:"2h", url:"https://eindhovennews.com"},
+            {source:"Reuters", category:"INFRA", country:"NLD", title:"Optics Supply Chain Resilience Initiative Launched", summary:"European component makers secure raw material pipelines for advanced optical lenses.", time:"3h", url:"https://www.reuters.com"},
+            {source:"Bloomberg", category:"INFRA", country:"NLD", title:"High-NA EUV Maintenance Networks Expand Globally", summary:"Dedicated technical teams dispatched to international wafer fabrication facilities.", time:"4h", url:"https://www.bloomberg.com"},
+            {source:"DutchNews", category:"GEO", country:"NLD", title:"Amsterdam Internet Exchange Handles Record AI Traffic", summary:"European data routing nodes experience unprecedented packet volume growth.", time:"5h", url:"https://www.dutchnews.nl"},
+            {source:"Techzine Netherlands", category:"INFRA", country:"NLD", title:"Software Automation Deployed in Lithography Calibration", summary:"Machine learning algorithms optimize beam alignment for precision wafer patterning.", time:"6h", url:"https://www.techzine.nl"},
 
-            {source:"Nikkei Asia", category:"INFRA", country:"JPN", title:"Kumamoto Foundry Phase Two Construction Commences", summary:"Regional semiconductor ecosystem expands with domestic and international backing.", time:"1h", url:"#"},
-            {source:"Financial Times", category:"GBR", title:"UK Academic Labs Partner with TEL on Nanomaterial Research", summary:"Advanced materials institute collaborates on next-gen semiconductor etching.", time:"2h", url:"#"},
-            {source:"Japan Times", category:"GEO", country:"JPN", title:"National Strategy Boosts Domestic Chip Manufacturing", summary:"Subsidies accelerate wafer fab construction across Kyushu and northern prefectures.", time:"3h", url:"#"},
-            {source:"Nikkei Asia", category:"INFRA", country:"JPN", title:"Advanced Packaging Materials Plant Operational", summary:"Specialized chemical suppliers ramp up production for 3D integrated circuits.", time:"4h", url:"#"},
-            {source:"Reuters Tokyo", category:"INFRA", country:"JPN", title:"Automotive Microcontroller Supply Stabilizes", summary:"Japanese carmakers report easing electronic component bottlenecks across assembly lines.", time:"5h", url:"#"},
-            {source:"Asahi Shimbun", category:"INFRA", country:"JPN", title:"Quantum Computing Research Consortium Established in Tokyo", summary:"Leading technology firms pool resources for fault-tolerant qubit architectures.", time:"6h", url:"#"},
-            {source:"Kyodo News", category:"GEO", country:"JPN", title:"Cybersecurity Protocols Enhanced for Critical Infrastructure", summary:"Utilities and transport networks upgrade defense mechanisms against advanced threats.", time:"7h", url:"#"},
+            {source:"Nikkei Asia", category:"INFRA", country:"JPN", title:"Kumamoto Foundry Phase Two Construction Commences", summary:"Regional semiconductor ecosystem expands with domestic and international backing.", time:"1h", url:"https://asia.nikkei.com"},
+            {source:"Financial Times", category:"GBR", title:"UK Academic Labs Partner with TEL on Nanomaterial Research", summary:"Advanced materials institute collaborates on next-gen semiconductor etching.", time:"2h", url:"https://www.ft.com"},
+            {source:"Japan Times", category:"GEO", country:"JPN", title:"National Strategy Boosts Domestic Chip Manufacturing", summary:"Subsidies accelerate wafer fab construction across Kyushu and northern prefectures.", time:"3h", url:"https://www.japantimes.co.jp"},
+            {source:"Nikkei Asia", category:"INFRA", country:"JPN", title:"Advanced Packaging Materials Plant Operational", summary:"Specialized chemical suppliers ramp up production for 3D integrated circuits.", time:"4h", url:"https://asia.nikkei.com"},
+            {source:"Reuters Tokyo", category:"INFRA", country:"JPN", title:"Automotive Microcontroller Supply Stabilizes", summary:"Japanese carmakers report easing electronic component bottlenecks across assembly lines.", time:"5h", url:"https://www.reuters.com"},
+            {source:"Asahi Shimbun", category:"INFRA", country:"JPN", title:"Quantum Computing Research Consortium Established in Tokyo", summary:"Leading technology firms pool resources for fault-tolerant qubit architectures.", time:"6h", url:"https://www.asahi.com"},
+            {source:"Kyodo News", category:"GEO", country:"JPN", title:"Cybersecurity Protocols Enhanced for Critical Infrastructure", summary:"Utilities and transport networks upgrade defense mechanisms against advanced threats.", time:"7h", url:"https://english.kyodonews.net"},
 
-            {source:"Yonhap News", category:"INFRA", country:"KOR", title:"HBM3E Memory Production Lines Run at Full Capacity", summary:"AI accelerator memory stacking drives surging quarterly fab revenue.", time:"15m", url:"#"},
-            {source:"Korea Economic Daily", category:"INFRA", country:"KOR", title:"Pyeongtaek Fab Line 5 Expansion Finalized", summary:"Next-gen lithography equipment installed for sub-3nm memory nodes.", time:"2h", url:"#"},
-            {source:"Korea Herald", category:"INFRA", country:"KOR", title:"HyperCLOVA X Sovereign AI Deployed in Public Sector", summary:"Government agencies adopt domestic LLM infrastructure for administrative automation.", time:"3h", url:"#"},
-            {source:"Yonhap News", category:"INFRA", country:"KOR", title:"Exclusive HBM Supply Agreements Secured with Major Hyperscalers", summary:"Advanced packaging technology solidifies market leadership in AI memory.", time:"4h", url:"#"},
-            {source:"Maeil Business Newspaper", category:"GEO", country:"KOR", title:"Seoul Invests in National Semiconductor Supercluster", summary:"Tax incentives and infrastructure support established for Yongin mega-cluster.", time:"5h", url:"#"},
-            {source:"Korea Times", category:"INFRA", country:"KOR", title:"Next-Gen Display Technologies Showcased at Seoul Expo", summary:"Micro-OLED and transparent panels ready for commercial augmented reality hardware.", time:"6h", url:"#"},
-            {source:"Yonhap News", category:"INFRA", country:"KOR", title:"Autonomous EV Battery Recycling Facilities Inaugurated", summary:"Closed-loop material recovery systems reduce reliance on imported raw minerals.", time:"7h", url:"#"},
+            {source:"Yonhap News", category:"INFRA", country:"KOR", title:"HBM3E Memory Production Lines Run at Full Capacity", summary:"AI accelerator memory stacking drives surging quarterly fab revenue.", time:"15m", url:"https://en.yna.co.kr"},
+            {source:"Korea Economic Daily", category:"INFRA", country:"KOR", title:"Pyeongtaek Fab Line 5 Expansion Finalized", summary:"Next-gen lithography equipment installed for sub-3nm memory nodes.", time:"2h", url:"https://english.hankyung.com"},
+            {source:"Korea Herald", category:"INFRA", country:"KOR", title:"HyperCLOVA X Sovereign AI Deployed in Public Sector", summary:"Government agencies adopt domestic LLM infrastructure for administrative automation.", time:"3h", url:"https://www.koreaherald.com"},
+            {source:"Yonhap News", category:"INFRA", country:"KOR", title:"Exclusive HBM Supply Agreements Secured with Major Hyperscalers", summary:"Advanced packaging technology solidifies market leadership in AI memory.", time:"4h", url:"https://en.yna.co.kr"},
+            {source:"Maeil Business Newspaper", category:"GEO", country:"KOR", title:"Seoul Invests in National Semiconductor Supercluster", summary:"Tax incentives and infrastructure support established for Yongin mega-cluster.", time:"5h", url:"https://www.pulsenews.co.kr"},
+            {source:"Korea Times", category:"INFRA", country:"KOR", title:"Next-Gen Display Technologies Showcased at Seoul Expo", summary:"Micro-OLED and transparent panels ready for commercial augmented reality hardware.", time:"6h", url:"https://www.koreatimes.co.kr"},
+            {source:"Yonhap News", category:"INFRA", country:"KOR", title:"Autonomous EV Battery Recycling Facilities Inaugurated", summary:"Closed-loop material recovery systems reduce reliance on imported raw minerals.", time:"7h", url:"https://en.yna.co.kr"},
 
-            {source:"BBC News", category:"INFRA", country:"GBR", title:"UK Renewable Energy Grids Adopt German Power Semiconductors", summary:"Smart substation transformers upgraded with Infineon microcontrollers.", time:"4h", url:"#"},
-            {source:"Handelsblatt", category:"INFRA", country:"DEU", title:"Dresden Silicon Saxony Cluster Attracts Global Foundries", summary:"European semiconductor manufacturing hub secures major expansion financing.", time:"1h", url:"#"},
-            {source:"Frankfurter Allgemeine", category:"GEO", country:"DEU", title:"German Chancellor Emphasizes Tech Sovereignty", summary:"European Union initiatives prioritize domestic production of critical electronic components.", time:"2h", url:"#"},
-            {source:"Der Spiegel", category:"INFRA", country:"DEU", title:"Automotive Software Standards Harmonized Across EU", summary:"Unified operating systems deployed for connected and autonomous vehicle fleets.", time:"3h", url:"#"},
-            {source:"Reuters Frankfurt", category:"INFRA", country:"DEU", title:"Industrial IoT Adoption Accelerates in Manufacturing Sector", summary:"Smart factory telemetry optimizes energy consumption and predictive maintenance.", time:"5h", url:"#"},
-            {source:"DW Business", category:"INFRA", country:"DEU", title:"Clean Energy Grids Integrate AI Load Balancing", summary:"Smart grid infrastructure manages fluctuating renewable power inputs across central Europe.", time:"6h", url:"#"},
-            {source:"Handelsblatt", category:"GEO", country:"DEU", title:"European Cyber Defense Center Coordinates Response", summary:"Cross-border intelligence sharing protects financial and industrial networks.", time:"7h", url:"#"}
+            {source:"BBC News", category:"INFRA", country:"GBR", title:"UK Renewable Energy Grids Adopt German Power Semiconductors", summary:"Smart substation transformers upgraded with Infineon microcontrollers.", time:"4h", url:"https://www.bbc.com/news"},
+            {source:"Handelsblatt", category:"INFRA", country:"DEU", title:"Dresden Silicon Saxony Cluster Attracts Global Foundries", summary:"European semiconductor manufacturing hub secures major expansion financing.", time:"1h", url:"https://www.handelsblatt.com"},
+            {source:"Frankfurter Allgemeine", category:"GEO", country:"DEU", title:"German Chancellor Emphasizes Tech Sovereignty", summary:"European Union initiatives prioritize domestic production of critical electronic components.", time:"2h", url:"https://www.faz.net"},
+            {source:"Der Spiegel", category:"INFRA", country:"DEU", title:"Automotive Software Standards Harmonized Across EU", summary:"Unified operating systems deployed for connected and autonomous vehicle fleets.", time:"3h", url:"https://www.spiegel.de"},
+            {source:"Reuters Frankfurt", category:"INFRA", country:"DEU", title:"Industrial IoT Adoption Accelerates in Manufacturing Sector", summary:"Smart factory telemetry optimizes energy consumption and predictive maintenance.", time:"5h", url:"https://www.reuters.com"},
+            {source:"DW Business", category:"INFRA", country:"DEU", title:"Clean Energy Grids Integrate AI Load Balancing", summary:"Smart grid infrastructure manages fluctuating renewable power inputs across central Europe.", time:"6h", url:"https://www.dw.com"},
+            {source:"Handelsblatt", category:"GEO", country:"DEU", title:"European Cyber Defense Center Coordinates Response", summary:"Cross-border intelligence sharing protects financial and industrial networks.", time:"7h", url:"https://www.handelsblatt.com"}
         ];
 
         let stockData = [
@@ -576,6 +580,7 @@
             renderGroupSelect();
             renderActiveGroupTable();
             renderNasdaqTable();
+            renderFilteredNews();
             loadActiveStock(0);
             init3D();
             setInterval(() => { simulateLiveTick(); }, 5000);
@@ -666,14 +671,14 @@
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
             document.getElementById(`view-${viewName}`).classList.add('active');
             
-            // Activate the correct tab button
             const tabs = document.querySelectorAll('.nav-tab');
             if(viewName === 'dashboard') tabs[0].classList.add('active');
             if(viewName === 'globe') {
                 tabs[1].classList.add('active');
                 setTimeout(onWindowResize, 50);
             }
-            if(viewName === 'nasdaq') tabs[2].classList.add('active');
+            if(viewName === 'news') tabs[2].classList.add('active');
+            if(viewName === 'nasdaq') tabs[3].classList.add('active');
         }
 
         function renderGroupSelect() {
@@ -816,8 +821,6 @@
             nasdaqChangeEl.innerText = `${isPositive ? '+' : ''}$${stock.change.toFixed(2)} (${isPositive ? '+' : ''}${stock.changePct.toFixed(1)}%)`;
 
             document.getElementById('chartHeaderTitle').innerText = `${stock.ticker} // LIVE_TELEMETRY [${currentInterval}]`;
-            document.getElementById('newsHeaderTitle').innerText = `[${stock.ticker}__INTELLIGENCE_STREAM]`;
-            renderFilteredNews();
             renderChart(stock);
             renderActiveGroupTable();
             renderNasdaqTable();
@@ -832,6 +835,7 @@
 
         function renderFilteredNews() {
             const container = document.getElementById('newsFeedContainer');
+            if(!container) return;
             container.innerHTML = '';
             let newsList = masterNewsPool;
             
@@ -854,6 +858,7 @@
                 const card = document.createElement('a');
                 card.href = item.url;
                 card.target = "_blank";
+                card.rel = "noopener noreferrer";
                 card.className = "news-card";
                 card.innerHTML = `
                     <div class="news-meta-row"><span>${item.source} (${item.country}) // ${item.time}</span><span class="${badgeClass}">${item.category}</span></div>
@@ -1048,7 +1053,6 @@
 
         function animateGlobe() {
             requestAnimationFrame(animateGlobe);
-            // Automatic rotation when user is not dragging
             if (!isUserDragging && globeMesh) {
                 globeMesh.rotation.y += 0.0015;
             }
