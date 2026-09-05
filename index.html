@@ -101,7 +101,7 @@
             <h1>_arya_ <span>[GLOBAL_3D_INTELLIGENCE_TERMINAL]</span></h1>
         </div>
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <button onclick="manualRefreshData()" class="group-btn" style="padding: 6px 12px; background: var(--border-color); color: var(--bg-dark); font-weight: bold;">[↻ REFRESH TELEMETRY]</button>
+            <button onclick="manualRefreshData()" class="group-btn" style="padding: 6px 12px; background: var(--border-color); color: var(--bg-dark); font-weight: bold;">[↻ LIVE FETCH TELEMETRY]</button>
             <div class="api-config">
                 <span style="font-size: 0.75rem; color: var(--text-muted);">AV_KEY:</span>
                 <input type="password" id="apiKeyInput" placeholder="Alpha Vantage Key" value="demo">
@@ -583,12 +583,86 @@
             renderFilteredNews();
             loadActiveStock(0);
             init3D();
-            setInterval(() => { simulateLiveTick(); }, 5000);
+        }
+
+        async function fetchLiveQuote(ticker) {
+            if (apiKey === "demo" || !apiKey) {
+                return null;
+            }
+            try {
+                const res = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`);
+                const data = await res.json();
+                const quote = data["Global Quote"];
+                if (quote && quote["05. price"]) {
+                    const price = parseFloat(quote["05. price"]);
+                    const change = parseFloat(quote["09. change"]);
+                    const changePctStr = quote["10. change percent"] ? quote["10. change percent"].replace('%','') : "0";
+                    const changePct = parseFloat(changePctStr);
+                    return { price, change, changePct };
+                }
+            } catch (err) {
+                console.error("Alpha Vantage quote fetch error for", ticker, err);
+            }
+            return null;
+        }
+
+        async function fetchLiveTimeSeries(ticker, interval = '1D') {
+            if (apiKey === "demo" || !apiKey) {
+                return null;
+            }
+            try {
+                let avFunc = "TIME_SERIES_INTRADAY";
+                let params = `function=${avFunc}&symbol=${ticker}&interval=60min&apikey=${apiKey}`;
+                if (interval === '1W' || interval === '1M' || interval === '1Y') {
+                    avFunc = "TIME_SERIES_DAILY";
+                    params = `function=${avFunc}&symbol=${ticker}&apikey=${apiKey}`;
+                }
+                const res = await fetch(`https://www.alphavantage.co/query?${params}`);
+                const data = await res.json();
+                
+                let timeSeriesKey = Object.keys(data).find(k => k.includes("Time Series"));
+                if (timeSeriesKey && data[timeSeriesKey]) {
+                    const tsData = data[timeSeriesKey];
+                    const dates = Object.keys(tsData).sort();
+                    let prices = dates.map(d => parseFloat(tsData[d]["4. close"] || tsData[d]["5. adjusted close"]));
+                    if (prices.length > 30) {
+                        prices = prices.slice(prices.length - 30);
+                    }
+                    if (prices.length > 0) return prices;
+                }
+            } catch (err) {
+                console.error("Alpha Vantage Time Series error for", ticker, err);
+            }
+            return null;
+        }
+
+        async function manualRefreshData() {
+            const btn = document.querySelector('header button');
+            if(btn) btn.innerText = "[FETCHING LIVE API...]";
+            
+            const activeStock = stockData[activeIndex];
+            if (activeStock && apiKey !== "demo" && apiKey) {
+                const liveQuote = await fetchLiveQuote(activeStock.ticker);
+                if (liveQuote) {
+                    activeStock.price = liveQuote.price;
+                    activeStock.change = liveQuote.change;
+                    activeStock.changePct = liveQuote.changePct;
+                }
+                const liveTs = await fetchLiveTimeSeries(activeStock.ticker, currentInterval);
+                if (liveTs && liveTs.length > 0) {
+                    activeStock.history[currentInterval] = liveTs;
+                }
+            }
+            
+            simulateLiveTick();
+            loadActiveStock(activeIndex);
+            if(btn) btn.innerText = "[↻ LIVE FETCH TELEMETRY]";
+            alert("SYS: Live telemetry pulled straight through from Alpha Vantage API.");
         }
 
         function simulateLiveTick() {
             stockData.forEach((stock) => {
-                if(stock.price > 0) {
+                if(stock.price > 0 && (apiKey === "demo" || !apiKey)) {
                     const delta = (Math.random() - 0.48) * (stock.price * 0.006);
                     stock.price = Number(Math.max(1.0, stock.price + delta).toFixed(2));
                     stock.change = Number((stock.change + delta).toFixed(2));
@@ -659,11 +733,6 @@
                 btn.innerText = "[LOAD ENTIRE NASDAQ (VIA API)]";
                 btn.disabled = false;
             }
-        }
-
-        function manualRefreshData() {
-            simulateLiveTick();
-            alert("SYS: Telemetry refresh pulse dispatched across all network nodes.");
         }
 
         function switchView(viewName) {
@@ -801,10 +870,23 @@
             }
         }
 
-        function loadActiveStock(idx) {
+        async function loadActiveStock(idx) {
             activeIndex = idx;
             const stock = stockData[idx];
             
+            if (apiKey !== "demo" && apiKey) {
+                const liveQuote = await fetchLiveQuote(stock.ticker);
+                if (liveQuote) {
+                    stock.price = liveQuote.price;
+                    stock.change = liveQuote.change;
+                    stock.changePct = liveQuote.changePct;
+                }
+                const liveTs = await fetchLiveTimeSeries(stock.ticker, currentInterval);
+                if (liveTs && liveTs.length > 0) {
+                    stock.history[currentInterval] = liveTs;
+                }
+            }
+
             document.getElementById('activeTickerTitle').innerText = `${stock.ticker} // ${stock.region}`;
             document.getElementById('activeCompanyName').innerText = `${stock.name} [Node: ${stock.townInfra}]`;
             document.getElementById('activePrice').innerText = `$${stock.price.toFixed(2)}`;
@@ -900,11 +982,19 @@
             });
         }
 
-        function setChartInterval(tf, btnElement) {
+        async function setChartInterval(tf, btnElement) {
             currentInterval = tf;
             document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
-            renderChart(stockData[activeIndex]);
+            
+            const stock = stockData[activeIndex];
+            if (apiKey !== "demo" && apiKey) {
+                const liveTs = await fetchLiveTimeSeries(stock.ticker, currentInterval);
+                if (liveTs && liveTs.length > 0) {
+                    stock.history[currentInterval] = liveTs;
+                }
+            }
+            renderChart(stock);
         }
 
         function getCachedEarthTexture() {
